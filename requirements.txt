@@ -1,0 +1,13 @@
+datasets
+transformers
+sentence-transformers
+huggingface_hub
+umap
+hdbscan
+numpy
+pandas
+matplotlib
+bertopic
+ipykernel
+ipywidgets
+datamapplot
