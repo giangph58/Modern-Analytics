@@ -2,7 +2,7 @@
 
 ## Description
 
-Group 20: Unpacking Horizon Europe’s contributions to Health: An NLP-based analysis of the Horizon Europe R&D&I programme.
+Group 20: Unpacking Horizon Europe’s contributions to Health: An NLP-based analysis of the Horizon Europe R&D&I programme. Please find our proposal doc [here](https://docs.google.com/document/d/10i8am4hh8vHtRw02Jtlf2n3YbpteXHW8ubKug7OI5yk/edit?userstoinvite=thijs.swinnen@cumulus.uzleuven.be&sharingaction=manageaccess&role=writer&tab=t.0)
 
 | Name             | ID       | Email                               |
 | ---------------- | -------- | ----------------------------------- |
@@ -53,6 +53,5 @@ The CORDIS EU Research Projects under Horizon Europe (2021–2027) dataset provi
     Programme: The specific program or sub-program under Horizon Europe that funds the project.
     Call Identifier: The reference to the specific call for proposals to which the project responded.
 
-## Links
-Here is our proposal: [doc](https://docs.google.com/document/d/10i8am4hh8vHtRw02Jtlf2n3YbpteXHW8ubKug7OI5yk/edit?userstoinvite=thijs.swinnen@cumulus.uzleuven.be&sharingaction=manageaccess&role=writer&tab=t.0)
+
 
