@@ -19,3 +19,6 @@ xformers
 nbformat
 pip
 shiny
+pyqtree
+ctransformers[cuda]
+nltk
