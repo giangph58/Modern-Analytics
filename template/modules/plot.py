@@ -11,7 +11,7 @@ from utils.helper_text import (
 )
 from utils.plot_utils import create_figure
 
-from data import plot_data_oecd, plot_data_world_bank
+from data import plot_data_oecd
 
 country_choices = plot_data_oecd["Entity"].unique().tolist() + ["World"]
 
@@ -56,11 +56,9 @@ def plot_ui():
 
 
 @module.server
-def plot_server(input, output, session, is_wb_data):
+def plot_server(input, output, session):
     @reactive.Calc
     def data():
-        if is_wb_data():
-            return plot_data_world_bank
         return plot_data_oecd
 
     @reactive.Calc

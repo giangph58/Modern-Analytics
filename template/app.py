@@ -74,11 +74,6 @@ page_header = ui.tags.div(
         class_="navigation-menu",
     ),
     ui.tags.div(
-        ui.input_switch(id="dataset", label="World Bank", value=True),
-        id="div-navbar-selector",
-        class_="navigation-dataset",
-    ),
-    ui.tags.div(
         ui.input_action_button(
             id="info_icon",
             label=None,
@@ -120,12 +115,8 @@ def server(input, output, session: Session):
     def _():
         info_modal()
 
-    @reactive.Calc
-    def is_wb_data():
-        return input.dataset()
-
-    map.map_server("map", is_wb_data)
-    plot.plot_server("plot", is_wb_data)
+    map.map_server("map")
+    plot.plot_server("plot")
 
     @reactive.Effect
     @reactive.event(input.tab_map)

@@ -23,3 +23,5 @@ shiny
 pyqtree
 beautifulsoup4
 plotly
+ipyleaflet
+shinywidgets

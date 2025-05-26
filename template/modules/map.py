@@ -13,7 +13,7 @@ from utils.helper_text import (
 )
 from utils.map_utils import add_circles, add_polygons, filter_data
 
-from data import map_data_oecd, map_data_world_bank, polygon_data
+from data import map_data_oecd, polygon_data
 
 basemap = cast(dict, basemaps)
 
@@ -49,7 +49,7 @@ def map_ui():
 
 
 @module.server
-def map_server(input, output, session, is_wb_data):
+def map_server(input, output, session):
     # Initialize and display when the session starts (1)
     map = Map(
         basemap=basemap["CartoDB"]["Positron"],
@@ -76,8 +76,6 @@ def map_server(input, output, session, is_wb_data):
 
     @reactive.Calc
     def point_data() -> DataFrame:
-        if is_wb_data():
-            return filter_data(map_data_world_bank, input.years_value())
         return filter_data(map_data_oecd, input.years_value())
 
     @reactive.Effect
