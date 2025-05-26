@@ -5,7 +5,7 @@ datasets
 transformers
 sentence-transformers
 huggingface_hub
-umap
+umap-learn
 hdbscan
 matplotlib
 seaborn
@@ -21,4 +21,5 @@ xformers
 nbformat
 shiny
 pyqtree
-
+beautifulsoup4
+plotly
