@@ -11,10 +11,6 @@ from utils.helper_text import (
 )
 from utils.plot_utils import create_figure
 
-from data import topic_data
-
-country_choices = topic_data["Entity"].unique().tolist()
-
 
 @module.ui
 def plot_ui():

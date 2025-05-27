@@ -9,7 +9,7 @@ from utils.helper_text import (
     missing_note,
     slider_text_plot,
 )
-from utils.plot_utils import create_figure
+from utils.plot_utils import create_figure, create_funds_bar_chart
 
 from data import plot_data
 
@@ -46,8 +46,13 @@ def plot_ui():
             class_="main-sidebar card-style",
         ),
         ui.tags.div(
+            ui.tags.h4("Total Funding for Health by Country"),
+            output_widget("funds_plot"),
+            ui.tags.hr(),
+            ui.tags.h4("Healthy Life Years over time"),
             output_widget("hly_plot"),
             ui.tags.hr(),
+            ui.tags.h4("GDP per capita over time"),
             output_widget("gdp_plot"),
             class_="main-main card-style",
         ),
@@ -63,6 +68,16 @@ def plot_server(input, output, session):
 
     @reactive.Calc
     def fig_one():
+        return create_funds_bar_chart(
+            data=data(),
+            country=input.country_select(),
+            y_from="TotalFunds",
+            title="",
+            labels={"TotalFunds": "Total Funds (€)"},
+        )
+
+    @reactive.Calc
+    def fig_two():
         filtered_data = data()
         # Filter for HLY at the figure level instead
         hly_data_subset = filtered_data[filtered_data["HealthyLifeYears"].notna()]
@@ -72,30 +87,32 @@ def plot_server(input, output, session):
             year_range=input.years_value(),
             country=input.country_select(),
             y_from="HealthyLifeYears",
-            title="Healthy Life Years",
-            labels={"Year": "Year", "HealthyLifeYears": "Healthy Life Years"},
+            title="",
+            labels={"Year": "Year", "HealthyLifeYears": "Healthy Life Years (years)"},
         )
 
     @reactive.Calc
-    def fig_two():
+    def fig_three():
         return create_figure(
             data=data(),
             year_range=input.years_value(),
             country=input.country_select(),
             y_from="GDP",
-            title="Gross Domestic Product",
+            title="",
             labels={
                 "Year": "Year",
-                "GDP": "GDP",
+                "GDP": "GDP per capita (€)",
             },
         )
 
-    # @output(suspend_when_hidden=False)
     @render_widget
-    def hly_plot():
+    def funds_plot():
         return fig_one()
 
-    # @output(suspend_when_hidden=False)
+    @render_widget
+    def hly_plot():
+        return fig_two()
+
     @render_widget
     def gdp_plot():
-        return fig_two()
+        return fig_three()

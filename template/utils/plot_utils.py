@@ -1,4 +1,3 @@
-import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from pandas import DataFrame
@@ -22,7 +21,8 @@ def create_figure(
         color="Entity",
         title=title,
         labels=labels,
-        color_discrete_sequence=px.colors.colorbrewer.Blues[1:],
+        # color_discrete_sequence=px.colors.colorbrewer.Blues[1:],
+        color_discrete_sequence=px.colors.colorbrewer.Pastel1,
     )
 
     fig.update_traces(
@@ -43,32 +43,38 @@ def create_figure(
     return go.FigureWidget(fig)
 
 
-def create_topic_trend(
+def create_funds_bar_chart(
     data: DataFrame,
+    country: str,
     y_from: str,
     title: str,
     labels: dict,
 ) -> go.FigureWidget:
-    data["ecSignatureDate"] = pd.to_datetime(data["ecSignatureDate"])
-    data["time_period"] = data["ecSignatureDate"].dt.to_period("Y").dt.to_timestamp()
-    plot_data = data.groupby(["time_period", "topic"]).size().reset_index(name="count")
-    # plot_data["topic_label"] = plot_data["topic"].map(topic_labels)
+    plot_data = data[data["Entity"].isin(country)]
+    plot_data["TotalFunds"] = plot_data["TotalFunds"].multiply(0.1)
 
-    fig = px.line(
-        plot_data,
-        x="time_period",
-        y="count",
-        color="topic",
-        markers=True,
-        title="Topic Trends Over Time",
-        hover_name="topic_label",
+    fig = px.bar(
+        data_frame=plot_data,
+        x="Entity",
+        y=y_from,
+        color="Entity",
+        title=title,
+        labels=labels,
+        color_discrete_sequence=px.colors.colorbrewer.Pastel1,
     )
-
+    fig.update_traces(
+        hovertemplate=f"<b>%{{x}}</b><br>{labels.get(y_from, y_from)}: %{{y:,.0f}}<extra></extra>"
+    )
     fig.update_layout(
-        xaxis_title="Time",
-        yaxis_title="Project Count",
-        legend_title="Topic",
-        xaxis=dict(tickformat="%Y", ticklabelmode="period"),
-        hovermode="x unified",
+        plot_bgcolor="white",
+        hovermode="x",
+        xaxis={
+            "categoryorder": "total descending",
+            # "title_text": labels.get(x_col, x_col),
+        },
+        yaxis={"title_text": labels.get(y_from, y_from)},
     )
+    fig.update_xaxes(showline=False, gridcolor="#d2d2d2", gridwidth=0.5)
+    fig.update_yaxes(showline=False, gridcolor="#d2d2d2", gridwidth=0.5)
+
     return go.FigureWidget(fig)

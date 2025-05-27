@@ -111,7 +111,7 @@ def load_topic_data():
     # Path to the real data file
     data_path = os.path.join(
         os.path.dirname(os.path.dirname(__file__)),
-        "data/processed/topics_df.csv",
+        "data/processed/topic_df.csv",
     )
     # Read the CSV file
     topic_df = pd.read_csv(data_path)

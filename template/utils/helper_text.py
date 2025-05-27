@@ -6,11 +6,7 @@ about_text = TagList(
     tags.br(),
     tags.p(
         """
-        The app gives a visual overview of PM2.5 air pollution
-        for different
-        countries over the years and its potential relationship
-        to respiratory
-        diseases and their prevalence.
+        The app presents a visual summary of insights from an analysis of the dynamics of Horizon Europe research investment and its contributions to Health.
         
         """,
         style="""
@@ -36,8 +32,8 @@ slider_text_map = tags.p(
 slider_text_plot = tags.p(
     """
     Please use the slider below to change the years as well as the
-    dropdown to select the countries to compare. By default, the mean
-    data for the World is plotted.
+    dropdown to select the countries to compare. By default, the
+    data for Germany is plotted.
     """,
     style="""
     text-align: justify;
@@ -50,10 +46,9 @@ dataset_information = TagList(
     tags.strong(tags.h3("Dataset Information")),
     tags.p(
         """
-        For the app, we have chosen data from the World Bank and
-        Organisation for Economic Co-operation and Development (OECD).
-        Also, for the data regarding the Death Rate, we relied on
-        Our World in Data. References
+        We use multiple data sets from the Horizon Europe CORDIS database, which includes details about 15,341 projects between 2021-2027.
+        Additionally, we obtain data on gross domestic product per capita (GDP) and healthy life years at birth (HLY) from EUROSTAT.
+        References
         to all three can be found below.
         """,
         style="""
@@ -65,22 +60,25 @@ dataset_information = TagList(
     tags.ul(
         tags.li(
             tags.a(
-                "World Bank",
-                href=("https://data.worldbank.org/indicator/" + "EN.ATM.PM25.MC.M3"),
-            )
-        ),
-        tags.li(
-            tags.a(
-                "OECD",
-                href=("https://stats.oecd.org/" + "Index.aspx?DataSetCode=EXP_PM2_5"),
-            )
-        ),
-        tags.li(
-            tags.a(
-                "Our World in Data",
+                "CORDIS",
                 href=(
-                    "https://ourworldindata.org/"
-                    + "grapher/respiratory-disease-death-rate"
+                    "https://data.europa.eu/data/datasets/cordis-eu-research-projects-under-horizon-europe-2021-2027?locale=en"
+                ),
+            )
+        ),
+        tags.li(
+            tags.a(
+                "GDP",
+                href=(
+                    "https://ec.europa.eu/eurostat/databrowser/view/nama_10_pc/default/table?lang=en"
+                ),
+            )
+        ),
+        tags.li(
+            tags.a(
+                "HLY",
+                href=(
+                    "https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Healthy_life_years_statistics"
                 ),
             )
         ),
@@ -91,11 +89,7 @@ missing_note = TagList(
     tags.p(
         tags.strong("Note: "),
         """
-        For years 1990 to 2010, the PM2.5 data was collected
-        at every
-        five-year mark. That is, the PM2.5 data is only
-        available for
-        1990, 1995, 2000, 2005, 2010, and 2010 onwards.
+        CORDIS datasets are produced monthly. Therefore, inconsistencies may occur between what is presented on the CORDIS live website and the datasets.
         """,
         style="""
         font-size: 14px;
@@ -110,19 +104,19 @@ missing_note = TagList(
 def info_modal():
     modal_show(
         modal(
-            tags.strong(tags.h3("Respiratory Diseases App")),
-            tags.p("Exploring Relationships between PM2.5 & Respiratory Diseases"),
+            tags.strong(tags.h3("Unpacking Horizon Europe contributions to Health")),
+            tags.p("An NLP-based analysis of the Horizon Europe R&D&I programmes"),
             tags.hr(),
             tags.strong(tags.h4("Problem Statement")),
             tags.p(
                 """
-            Air Pollution has always been a problem for the world and over
-            the years, especially with the pandemic, the ambient air pollution
-            seems to be a slow burn for the entire population of the planet.
-            Through this app, we wish to explore the relationship between
-            the PM2.5 particulate metric and the Death Rate
-            (defined as deaths per 100,000) from respiratory
-            illnesses over the world over the years.
+            The publicly available Horizon Europe CORDIS dataset provides a vast amount of information on research and innovations across Europe, 
+            but the sheer volume and diversity of data present unique challenges in understanding its dynamics and extracting meaningful insights. 
+            One key thematic area of investment is Health, organized in Cluster 1 of Horizon Europe, and is the focus of our project.
+            
+            Advances in Natural Language Processing (NLP) and text mining offer a powerful opportunity to bridge this gap by systematically 
+            exploring these open-access resources for knowledge extraction and thematic organization. Through a combination of computational methods, 
+            data visualization, and cross-dataset comparisons, we aim to analyze the dynamics of Horizon Europe research investment and its contributions to Health.
             """,
                 style="""
             text-align: justify;

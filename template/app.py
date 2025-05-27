@@ -64,8 +64,24 @@ page_header = ui.tags.div(
         ),
         ui.tags.div(
             ui.input_action_button(
-                id="tab_plot",
-                label="Graphs",
+                id="tab_funding",
+                label="Funding and Impact",
+                class_="navbar-button",
+            ),
+            id="div-navbar-plot",
+        ),
+        ui.tags.div(
+            ui.input_action_button(
+                id="tab_collab",
+                label="Collaborations",
+                class_="navbar-button",
+            ),
+            id="div-navbar-plot",
+        ),
+        ui.tags.div(
+            ui.input_action_button(
+                id="tab_topic",
+                label="Topics",
                 class_="navbar-button",
             ),
             id="div-navbar-plot",
@@ -103,7 +119,7 @@ page_layout = ui.tags.div(page_header, map_ui, plot_ui, class_="page-layout")
 app_ui = ui.page_fluid(
     page_dependencies,
     page_layout,
-    title="Respiratory Disease App",
+    title="Horizon Europe Health Dashboard",
 )
 
 
@@ -124,7 +140,7 @@ def server(input, output, session: Session):
         await session.send_custom_message("toggleActiveTab", {"activeTab": "map"})
 
     @reactive.Effect
-    @reactive.event(input.tab_plot)
+    @reactive.event(input.tab_funding)
     async def _():
         await session.send_custom_message("toggleActiveTab", {"activeTab": "plot"})
 
