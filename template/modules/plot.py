@@ -11,9 +11,9 @@ from utils.helper_text import (
 )
 from utils.plot_utils import create_figure
 
-from data import plot_data_oecd
+from data import plot_data
 
-country_choices = plot_data_oecd["Entity"].unique().tolist() + ["World"]
+country_choices = plot_data["Entity"].unique().tolist()
 
 
 @module.ui
@@ -27,16 +27,16 @@ def plot_ui():
             ui.input_slider(
                 id="years_value",
                 label="Select Year",
-                min=1990,
-                max=2017,
-                value=[2010, 2015],
+                min=2013,
+                max=2024,
+                value=[2015, 2021],
                 sep="",
             ),
             ui.input_selectize(
                 id="country_select",
                 label="Select Countries:",
                 choices=country_choices,
-                selected="World",
+                selected=country_choices[0],
                 multiple=True,
             ),
             ui.tags.hr(),
@@ -46,9 +46,9 @@ def plot_ui():
             class_="main-sidebar card-style",
         ),
         ui.tags.div(
-            output_widget("dr_plot"),
+            output_widget("hly_plot"),
             ui.tags.hr(),
-            output_widget("pm_plot"),
+            output_widget("gdp_plot"),
             class_="main-main card-style",
         ),
         class_="main-layout",
@@ -59,20 +59,21 @@ def plot_ui():
 def plot_server(input, output, session):
     @reactive.Calc
     def data():
-        return plot_data_oecd
+        return plot_data
 
     @reactive.Calc
     def fig_one():
+        filtered_data = data()
+        # Filter for HLY at the figure level instead
+        hly_data_subset = filtered_data[filtered_data["HealthyLifeYears"].notna()]
+
         return create_figure(
-            data=data(),
+            data=hly_data_subset,
             year_range=input.years_value(),
             country=input.country_select(),
-            y_from="Death.Rate",
-            title="Death Rate From Respiratory Diseases",
-            labels={
-                "Year": "Year",
-                "Death.Rate": "Deaths per 100,000",
-            },
+            y_from="HealthyLifeYears",
+            title="Healthy Life Years",
+            labels={"Year": "Year", "HealthyLifeYears": "Healthy Life Years"},
         )
 
     @reactive.Calc
@@ -81,20 +82,20 @@ def plot_server(input, output, session):
             data=data(),
             year_range=input.years_value(),
             country=input.country_select(),
-            y_from="PM2.5",
-            title="PM2.5 Measure",
+            y_from="GDP",
+            title="Gross Domestic Product",
             labels={
                 "Year": "Year",
-                "PM2.5": "PM2.5",
+                "GDP": "GDP",
             },
         )
 
-    @output(suspend_when_hidden=False)
+    # @output(suspend_when_hidden=False)
     @render_widget
-    def dr_plot():
+    def hly_plot():
         return fig_one()
 
-    @output(suspend_when_hidden=False)
+    # @output(suspend_when_hidden=False)
     @render_widget
-    def pm_plot():
+    def gdp_plot():
         return fig_two()

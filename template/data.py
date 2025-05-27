@@ -103,12 +103,19 @@ def load_real_data():
 
 # Load the real data
 map_data, polygon_data = load_real_data()
+plot_data = map_data.copy()
 
-# Replace the dummy data with the real data
-map_data_oecd = map_data.copy()
-polygon_data = polygon_data.copy()
-plot_data_oecd = map_data.copy()
 
-# Legacy variables (in case the original code references these)
-map_data_world_bank = map_data_oecd.copy()
-plot_data_world_bank = plot_data_oecd.copy()
+def load_topic_data():
+    """Load topic data from CSV file"""
+    # Path to the real data file
+    data_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "data/processed/topics_df.csv",
+    )
+    # Read the CSV file
+    topic_df = pd.read_csv(data_path)
+    return topic_df
+
+
+topic_data = load_topic_data()

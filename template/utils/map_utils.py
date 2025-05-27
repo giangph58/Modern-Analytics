@@ -80,11 +80,12 @@ def add_circles(geodata: DataFrame, circle_layer: LayerGroup) -> None:
         funding = row.get("TotalFunds", 0)
         radius = 5
         if max_funds > 0:
-            radius = max(5, min(20, (funding / max_funds) * 20))
+            # Convert radius to integer to fix the error
+            radius = int(max(5, min(20, (funding / max_funds) * 20)))
 
         circle_marker = CircleMarker(
             location=[row["latitude"], row["longitude"]],
-            radius=radius,
+            radius=radius,  # Now this is guaranteed to be an integer
             weight=1,
             color="white",
             opacity=0.7,

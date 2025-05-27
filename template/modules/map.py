@@ -13,7 +13,7 @@ from utils.helper_text import (
 )
 from utils.map_utils import add_circles, add_polygons, filter_data
 
-from data import map_data_oecd, polygon_data
+from data import map_data, polygon_data
 
 basemap = cast(dict, basemaps)
 
@@ -76,7 +76,7 @@ def map_server(input, output, session):
 
     @reactive.Calc
     def point_data() -> DataFrame:
-        return filter_data(map_data_oecd, input.years_value())
+        return filter_data(map_data, input.years_value())
 
     @reactive.Effect
     def _() -> None:
