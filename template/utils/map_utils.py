@@ -59,22 +59,41 @@ def add_circles(geodata: DataFrame, circle_layer: LayerGroup) -> None:
     """Layer data is updated by reference, hence None return"""
     circle_layer.clear_layers()
     circle_markers = []
+
+    # Find the min and max values for better scaling
+    max_funds = geodata["TotalFunds"].max() if "TotalFunds" in geodata.columns else 0
+
     for _, row in geodata.iterrows():
-        popup = HTML(f"<b>{row.Entity}:</b></br>" + str(round(row["Death.Rate"], 2)))
+        # Create more detailed popup information
+        popup_html = f"""
+        <div style='min-width: 150px'>
+            <b>{row.Entity}</b><br>
+            <b>Healthy Life Years:</b> {round(row.get("HealthyLifeYears", 0), 1)}<br>
+            <b>GDP:</b> ${int(row.get("GDP", 0)):,}<br>
+            <b>EU Funding:</b> ${int(row.get("TotalFunds", 0)):,}
+        </div>
+        """
+
+        popup = HTML(popup_html)
+
+        # Scale circle size based on funding amount
+        funding = row.get("TotalFunds", 0)
+        radius = 5
+        if max_funds > 0:
+            radius = max(5, min(20, (funding / max_funds) * 20))
+
         circle_marker = CircleMarker(
-            location=[
-                row["latitude"],
-                row["longitude"],
-            ],  # Updated to match dummy data columns
-            radius=determine_circle_radius(row["Death.Rate"]),
+            location=[row["latitude"], row["longitude"]],
+            radius=radius,
             weight=1,
             color="white",
             opacity=0.7,
-            fill_color=determine_circle_color(row["PM2.5"]),
-            fill_opacity=0.5,
+            fill_color=determine_circle_color(row.get("HealthyLifeYears", 0)),
+            fill_opacity=0.7,
             popup=popup,
         )
         circle_markers.append(circle_marker)
+
     points = LayerGroup(layers=circle_markers)
     circle_layer.add_layer(points)
 
@@ -87,28 +106,34 @@ def add_polygons(
     """Add choropleth polygons to the map"""
     polygons_layer.clear_layers()
 
-    # For dummy data, we'll create a simple choropleth
-    # In a real app, you'd merge with actual polygon geometries
     try:
+        # Print diagnostic information
+        print(f"Points data columns: {points_data.columns.tolist()}")
+        print(f"Polygon data columns: {polygon_data.columns.tolist()}")
+
         combined_data = merge(
             polygon_data, points_data, left_on="Entity", right_on="Entity", how="inner"
         )
+
+        print(f"Combined data size: {len(combined_data)}")
+
         if len(combined_data) > 0:
-            # Create a simple choropleth layer
-            # Note: This is simplified for dummy data
+            # Create the GeoJSON data
             geo_data = dataframe_to_geojson(combined_data)
-            choro_data = dict(zip(combined_data["Entity"], combined_data["Death.Rate"]))
+
+            # Use healthy life years as the choropleth data
+            choro_data = dict(zip(combined_data["Entity"], combined_data["TotalFunds"]))
 
             choropleth_layer = Choropleth(
                 geo_data=geo_data,
                 choro_data=choro_data,
-                colormap=linear.GnBu_09,
-                value_min=0,
-                value_max=70,
+                colormap=linear.YlOrRd_09,  # Different color scheme for health data
+                value_min=50,  # Adjust based on your health data range
+                value_max=75,  # Adjust based on your health data range
                 style={
                     "weight": 2,
                     "opacity": 1,
-                    "fillOpacity": 0.5,
+                    "fillOpacity": 0.7,
                     "color": "white",
                     "dashArray": "3",
                 },
@@ -117,13 +142,21 @@ def add_polygons(
                     "color": "#FFF",
                     "dashArray": "",
                     "fillOpacity": 0.8,
-                    "bringToFront": False,
+                    "bringToFront": True,
                 },
             )
+
+            # Add tooltips with funding information
+            choropleth_layer.tooltip = HTML()
+
             polygons_layer.add_layer(choropleth_layer)
+            print("Choropleth layer added successfully")
     except Exception as e:
-        # If polygon rendering fails, just skip it for now
+        # Provide detailed error information
         print(f"Polygon rendering skipped: {e}")
+        import traceback
+
+        traceback.print_exc()
 
 
 def filter_data(data: DataFrame, year: int) -> DataFrame:
@@ -136,14 +169,23 @@ def dataframe_to_geojson(df: DataFrame) -> dict:
     geojson = {"type": "FeatureCollection", "features": []}
 
     for _, row in df.iterrows():
-        # Create simple polygon around each country point for dummy data
+        # Get coordinates from the merged data
         lat = row.get("latitude", 0)
         lon = row.get("longitude", 0)
 
+        # Additional properties for tooltips
+        properties = {
+            "name": row["Entity"],
+            "hly": row.get("HealthyLifeYears", 0),
+            "gdp": row.get("GDP", 0),
+            "funds": row.get("TotalFunds", 0),
+        }
+
+        # Create the GeoJSON feature
         feature = {
             "type": "Feature",
             "id": row["Entity"],
-            "properties": {"name": row["Entity"]},
+            "properties": properties,
             "geometry": {
                 "type": "Polygon",
                 "coordinates": [

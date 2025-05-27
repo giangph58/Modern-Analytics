@@ -29,9 +29,9 @@ def map_ui():
             ui.input_slider(
                 id="years_value",
                 label="Select Year",
-                min=1990,
-                max=2017,
-                value=2010,
+                min=2013,
+                max=2024,
+                value=2021,
                 sep="",
             ),
             ui.tags.hr(),

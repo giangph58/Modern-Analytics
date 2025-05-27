@@ -1,92 +1,114 @@
-import numpy as np
+import os
+
 import pandas as pd
 
-# Generate dummy map_data_oecd
-countries = [
-    {"Entity": "United States", "lat": 39.8283, "lon": -98.5795},
-    {"Entity": "Germany", "lat": 51.1657, "lon": 10.4515},
-    {"Entity": "France", "lat": 46.2276, "lon": 2.2137},
-    {"Entity": "United Kingdom", "lat": 55.3781, "lon": -3.4360},
-    {"Entity": "Japan", "lat": 36.2048, "lon": 138.2529},
-    {"Entity": "Canada", "lat": 56.1304, "lon": -106.3468},
-    {"Entity": "Australia", "lat": -25.2744, "lon": 133.7751},
-    {"Entity": "Italy", "lat": 41.8719, "lon": 12.5674},
-    {"Entity": "Spain", "lat": 40.4637, "lon": -3.7492},
-    {"Entity": "Netherlands", "lat": 52.1326, "lon": 5.2913},
-]
 
-years = list(range(1990, 2018))
-map_data_rows = []
-plot_data_rows = []
+def load_real_data():
+    """Load real data from CSV file and prepare it for mapping"""
+    # Path to the real data file
+    data_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "data/processed/FundsGDPhealth_export.csv",
+    )
 
-np.random.seed(42)
+    # Read the CSV file
+    df = pd.read_csv(data_path)
 
-# Generate map data
-for country in countries:
-    for year in years:
-        base_death_rate = np.random.uniform(20, 80)
-        year_trend = (year - 1990) * np.random.uniform(-0.5, 0.2)
-        death_rate = max(10, base_death_rate + year_trend + np.random.normal(0, 5))
-
-        base_pm25 = np.random.uniform(8, 25)
-        pm25_trend = (year - 1990) * np.random.uniform(-0.1, 0.3)
-        pm25 = max(5, base_pm25 + pm25_trend + np.random.normal(0, 2))
-
-        map_data_rows.append(
-            {
-                "Entity": country["Entity"],
-                "Year": year,
-                "Death.Rate": round(death_rate, 1),
-                "PM2.5": round(pm25, 1),
-                "latitude": country["lat"],
-                "longitude": country["lon"],
-            }
-        )
-
-# Generate plot data (including "World")
-plot_countries = [country["Entity"] for country in countries] + ["World"]
-
-np.random.seed(42)
-for country in plot_countries:
-    for year in years:
-        if country == "World":
-            death_rate = np.random.uniform(35, 55) + (year - 1990) * np.random.uniform(
-                -0.3, 0.1
-            )
-            pm25 = np.random.uniform(12, 18) + (year - 1990) * np.random.uniform(0, 0.2)
-        else:
-            base_death_rate = np.random.uniform(20, 80)
-            year_trend = (year - 1990) * np.random.uniform(-0.5, 0.2)
-            death_rate = max(10, base_death_rate + year_trend + np.random.normal(0, 5))
-
-            base_pm25 = np.random.uniform(8, 25)
-            pm25_trend = (year - 1990) * np.random.uniform(-0.1, 0.3)
-            pm25 = max(5, base_pm25 + pm25_trend + np.random.normal(0, 2))
-
-        plot_data_rows.append(
-            {
-                "Entity": country,
-                "Year": year,
-                "Death.Rate": round(death_rate, 1),
-                "PM2.5": round(pm25, 1),
-            }
-        )
-
-# Create DataFrames
-map_data_oecd = pd.DataFrame(map_data_rows)
-plot_data_oecd = pd.DataFrame(plot_data_rows)
-
-# Create dummy polygon data for choropleth maps
-polygon_data = pd.DataFrame(
-    {
-        "Entity": [country["Entity"] for country in countries],
-        "geometry": [
-            f"POLYGON(({country['lon'] - 2} {country['lat'] - 2}, {country['lon'] + 2} {country['lat'] - 2}, {country['lon'] + 2} {country['lat'] + 2}, {country['lon'] - 2} {country['lat'] + 2}, {country['lon'] - 2} {country['lat'] - 2}))"
-            for country in countries
-        ],
+    # Add country coordinates for mapping (a lookup dictionary)
+    country_coords = {
+        "Germany": {"lat": 51.1657, "lon": 10.4515},
+        "France": {"lat": 46.2276, "lon": 2.2137},
+        "Netherlands": {"lat": 52.1326, "lon": 5.2913},
+        "Spain": {"lat": 40.4637, "lon": -3.7492},
+        "Italy": {"lat": 41.8719, "lon": 12.5674},
+        "Belgium": {"lat": 50.8503, "lon": 4.3517},
+        "Norway": {"lat": 60.4720, "lon": 8.4689},
+        "Sweden": {"lat": 60.1282, "lon": 18.6435},
+        "Denmark": {"lat": 56.2639, "lon": 9.5018},
+        "Austria": {"lat": 47.5162, "lon": 14.5501},
+        "Portugal": {"lat": 39.3999, "lon": -8.2245},
+        "Finland": {"lat": 61.9241, "lon": 25.7482},
+        "Ireland": {"lat": 53.1424, "lon": -7.6921},
+        "Poland": {"lat": 51.9194, "lon": 19.1451},
+        "Czechia": {"lat": 49.8175, "lon": 15.4730},
+        "Slovenia": {"lat": 46.1512, "lon": 14.9955},
+        "Luxembourg": {"lat": 49.8153, "lon": 6.1296},
+        "Hungary": {"lat": 47.1625, "lon": 19.5033},
+        "Romania": {"lat": 45.9432, "lon": 24.9668},
+        "Turkey": {"lat": 38.9637, "lon": 35.2433},
+        "Estonia": {"lat": 58.5953, "lon": 25.0136},
+        "Switzerland": {"lat": 46.8182, "lon": 8.2275},
+        "Cyprus": {"lat": 35.1264, "lon": 33.4299},
+        "Lithuania": {"lat": 55.1694, "lon": 23.8813},
+        "Latvia": {"lat": 56.8796, "lon": 24.6032},
+        "Croatia": {"lat": 45.1000, "lon": 15.2000},
+        "Serbia": {"lat": 44.0165, "lon": 21.0059},
+        "Slovakia": {"lat": 48.6690, "lon": 19.6990},
+        "Bulgaria": {"lat": 42.7339, "lon": 25.4858},
+        "Iceland": {"lat": 64.9631, "lon": -19.0208},
+        "Malta": {"lat": 35.9375, "lon": 14.3754},
+        # "Ukraine": {"lat": 48.3794, "lon": 31.1656},
+        "Albania": {"lat": 41.1533, "lon": 20.1683},
+        "North Macedonia": {"lat": 41.6086, "lon": 21.7453},
+        "Montenegro": {"lat": 42.7087, "lon": 19.3744},
+        # "Bosnia and Herzegovina": {"lat": 43.9159, "lon": 17.6791},
     }
-)
+
+    # Create a new map-ready DataFrame
+    map_data = []
+    years = range(2013, 2025)
+
+    for _, row in df.iterrows():
+        country_name = row["TIME"]  # 'TIME' column contains country names
+        country_code = row["country"]
+
+        if country_name in country_coords:
+            for year in years:
+                gdp_col = f"GDP{year}"
+                health_col = f"HLY{year}"
+
+                # Skip if data is missing
+                if pd.notna(row.get(gdp_col)) and pd.notna(row.get(health_col, None)):
+                    map_data.append(
+                        {
+                            "Entity": country_name,
+                            "CountryCode": country_code,
+                            "Year": year,
+                            "GDP": row[gdp_col],
+                            "HealthyLifeYears": row[health_col],
+                            "latitude": country_coords[country_name]["lat"],
+                            "longitude": country_coords[country_name]["lon"],
+                            "TotalFunds": row["TotalFundsPerCountry"],
+                        }
+                    )
+
+    # Convert to DataFrame
+    map_data_df = pd.DataFrame(map_data)
+
+    # Create polygon data
+    polygon_data_df = pd.DataFrame(
+        {
+            "Entity": list(country_coords.keys()),
+            "geometry": [
+                f"POLYGON(({coords['lon'] - 2} {coords['lat'] - 2}, {coords['lon'] + 2} {coords['lat'] - 2}, "
+                + f"{coords['lon'] + 2} {coords['lat'] + 2}, {coords['lon'] - 2} {coords['lat'] + 2}, "
+                + f"{coords['lon'] - 2} {coords['lat'] - 2}))"
+                for coords in country_coords.values()
+            ],
+        }
+    )
+
+    return map_data_df, polygon_data_df
+
+
+# Load the real data
+map_data, polygon_data = load_real_data()
+
+# Replace the dummy data with the real data
+map_data_oecd = map_data.copy()
+polygon_data = polygon_data.copy()
+plot_data_oecd = map_data.copy()
 
 # Legacy variables (in case the original code references these)
-map_data_world_bank = map_data_oecd.copy()  # Same data for compatibility
-plot_data_world_bank = plot_data_oecd.copy()  # Same data for compatibility
+map_data_world_bank = map_data_oecd.copy()
+plot_data_world_bank = plot_data_oecd.copy()
