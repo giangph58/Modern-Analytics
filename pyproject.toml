@@ -22,6 +22,7 @@ dependencies = [
     "pandas>=2.2.3",
     "plotly>=6.1.1",
     "pyqtree>=1.0.0",
+    "safetensors>=0.5.3",
     "scispacy>=0.5.5",
     "seaborn>=0.13.2",
     "sentence-transformers>=4.1.0",

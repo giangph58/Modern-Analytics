@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from modules import map, plot
+from modules import map, plot, topic
 from shiny import App, Session, reactive, ui
 from utils.helper_text import info_modal
 
@@ -9,37 +9,37 @@ page_dependencies = ui.tags.head(
     ui.tags.link(rel="stylesheet", type="text/css", href="style.css"),
     ui.tags.script(src="index.js"),
     # PWA Support
-    ui.tags.script("""
+    # ui.tags.script("""
 
-        async function delayManifest() {
-            let retries = 100;
-            let statusCode = 404;
-            let response;
+    #     async function delayManifest() {
+    #         let retries = 100;
+    #         let statusCode = 404;
+    #         let response;
 
-            while (statusCode === 404 && --retries > 0) {
-                response = await fetch("pwa/manifest.json");
-                statusCode = response.statusCode;
-            }
+    #         while (statusCode === 404 && --retries > 0) {
+    #             response = await fetch("pwa/manifest.json");
+    #             statusCode = response.statusCode;
+    #         }
 
-            if (response.statusCode === 404) throw new Error('max retries reached');
+    #         if (response.statusCode === 404) throw new Error('max retries reached');
 
-            $('head').append('<link rel="manifest" href="pwa/manifest.json"/>');
+    #         $('head').append('<link rel="manifest" href="pwa/manifest.json"/>');
 
-            return response;
-        }
-        delayManifest();
+    #         return response;
+    #     }
+    #     delayManifest();
 
-        if('serviceWorker' in navigator) {
-          navigator.serviceWorker
-            .register('/respiratory_disease_pyshiny/pwa-service-worker.js', { scope: '/respiratory_disease_pyshiny/' })
-            .then(function() { console.log('Service Worker Registered'); });
-        }
-    """),
-    ui.tags.link(rel="apple-touch-icon", href="pwa/icon.png"),
-    ui.tags.meta(name="description", content="Respiratory Disease PyShiny"),
+    #     if('serviceWorker' in navigator) {
+    #       navigator.serviceWorker
+    #         .register('/respiratory_disease_pyshiny/pwa-service-worker.js', { scope: '/respiratory_disease_pyshiny/' })
+    #         .then(function() { console.log('Service Worker Registered'); });
+    #     }
+    # """),
+    # ui.tags.link(rel="apple-touch-icon", href="pwa/icon.png"),
+    ui.tags.meta(name="description", content="Climate Health Dashboard"),
     ui.tags.meta(name="theme-color", content="#000000"),
-    ui.tags.meta(name="apple-mobile-web-app-status-bar-style", content="#000000"),
-    ui.tags.meta(name="apple-mobile-web-app-capable", content="yes"),
+    # ui.tags.meta(name="apple-mobile-web-app-status-bar-style", content="#000000"),
+    # ui.tags.meta(name="apple-mobile-web-app-capable", content="yes"),
     ui.tags.meta(name="viewport", content="width=device-width, initial-scale=1"),
 )
 
@@ -68,7 +68,7 @@ page_header = ui.tags.div(
                 label="Funding and Impact",
                 class_="navbar-button",
             ),
-            id="div-navbar-plot",
+            id="div-navbar-funding",
         ),
         ui.tags.div(
             ui.input_action_button(
@@ -76,7 +76,7 @@ page_header = ui.tags.div(
                 label="Collaborations",
                 class_="navbar-button",
             ),
-            id="div-navbar-plot",
+            id="div-navbar-collab",
         ),
         ui.tags.div(
             ui.input_action_button(
@@ -84,7 +84,7 @@ page_header = ui.tags.div(
                 label="Topics",
                 class_="navbar-button",
             ),
-            id="div-navbar-plot",
+            id="div-navbar-topic",
         ),
         id="div-navbar-tabs",
         class_="navigation-menu",
@@ -114,7 +114,14 @@ plot_ui = ui.tags.div(
     class_="page-main",
 )
 
-page_layout = ui.tags.div(page_header, map_ui, plot_ui, class_="page-layout")
+topic_ui = ui.tags.div(
+    topic.topic_ui("topic"),
+    id="topic-container", 
+    class_="page-main",
+)
+
+
+page_layout = ui.tags.div(page_header, map_ui, plot_ui, topic_ui, class_="page-layout")
 
 app_ui = ui.page_fluid(
     page_dependencies,
@@ -133,6 +140,7 @@ def server(input, output, session: Session):
 
     map.map_server("map")
     plot.plot_server("plot")
+    topic.topic_server("topic")
 
     @reactive.Effect
     @reactive.event(input.tab_map)
@@ -144,6 +152,15 @@ def server(input, output, session: Session):
     async def _():
         await session.send_custom_message("toggleActiveTab", {"activeTab": "plot"})
 
+    @reactive.Effect
+    @reactive.event(input.tab_topic)
+    async def _():
+        await session.send_custom_message("toggleActiveTab", {"activeTab": "topic"})
+
+    # @reactive.Effect
+    # @reactive.event(input.tab_collab)
+    # async def _():
+    #     await session.send_custom_message("toggleActiveTab", {"activeTab": "collab"})
 
 www_dir = Path(__file__).parent / "www"
 app = App(app_ui, server, static_assets=www_dir)

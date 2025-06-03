@@ -12,7 +12,7 @@ def create_figure(
     labels: dict,
 ) -> go.FigureWidget:
     plot_data = data[data["Year"].between(year_range[0], year_range[1])]
-    plot_data = plot_data[plot_data["Entity"].isin(country)]
+    plot_data = plot_data[plot_data["Entity"].isin(country)].copy()
 
     fig = px.line(
         data_frame=plot_data,

@@ -9,32 +9,31 @@ from utils.helper_text import (
     missing_note,
     slider_text_plot,
 )
-from utils.plot_utils import create_figure
+from utils.topic_utils import create_topic_trend, create_topic_total_funding, create_topic_avg_funding, create_topic_total_publication, create_topic_avg_publication, create_topic_kwords, create_static_topic_map
+
+from data import load_topic_data, load_topic_model, load_2comp_embeddings, load_5comp_embeddings, load_titles
+import plotly.graph_objects as go
+import os
 
 
 @module.ui
-def plot_ui():
+def topic_ui():
+    topic_options = {i: f"Topic {i}" for i in range(23)}
+
     return ui.tags.div(
         ui.tags.div(
             about_text,
             ui.tags.hr(),
-            slider_text_plot,
-            ui.tags.br(),
-            ui.input_slider(
-                id="years_value",
-                label="Select Year",
-                min=2013,
-                max=2024,
-                value=[2015, 2021],
-                sep="",
-            ),
+            # slider_text_plot,
+            ui.h4("Topic Filter"),
             ui.input_selectize(
-                id="country_select",
-                label="Select Countries:",
-                choices=country_choices,
-                selected=country_choices[0],
+                id="selected_topics",
+                label="Select topicse:",
+                choices=topic_options,
                 multiple=True,
+                selected=list(range(23))  # Default to all topics
             ),
+            ui.tags.br(),
             ui.tags.hr(),
             dataset_information,
             ui.tags.hr(),
@@ -42,9 +41,26 @@ def plot_ui():
             class_="main-sidebar card-style",
         ),
         ui.tags.div(
-            output_widget("hly_plot"),
+            ui.tags.h4("Topic Document Datamap"),
+            output_widget("topic_static_map"),
             ui.tags.hr(),
-            output_widget("gdp_plot"),
+            ui.tags.h4("Topic Key Words"),
+            output_widget("topic_kwords_plot"),
+            ui.tags.hr(),
+            ui.tags.h4("Topic Trend over time"),
+            output_widget("topic_trend_plot"),
+            ui.tags.hr(),
+            ui.tags.h4("Total Funding by Topic"),
+            output_widget("topic_total_funding_plot"),
+            ui.tags.hr(),
+            ui.tags.h4("Average Funding per Project by Topic"),
+            output_widget("topic_avg_funding_plot"),
+            ui.tags.hr(),
+            ui.tags.h4("Total Publications by Topic"),
+            output_widget("topic_total_publication_plot"),
+            ui.tags.hr(),
+            ui.tags.h4("Average Publications per Project by Topic"),
+            output_widget("topic_avg_publication_plot"),
             class_="main-main card-style",
         ),
         class_="main-layout",
@@ -52,46 +68,142 @@ def plot_ui():
 
 
 @module.server
-def plot_server(input, output, session):
+def topic_server(input, output, session):
     @reactive.Calc
     def data():
-        return plot_data
+        return load_topic_data()
 
+    @reactive.Calc
+    def embeddings_2comp():
+        return load_2comp_embeddings()
+
+    @reactive.Calc
+    def embeddings_5comp():
+        return load_5comp_embeddings()
+
+    @reactive.Calc
+    def data():
+        return load_topic_data()
+
+    @reactive.Calc
+    def filtered_data():
+        # For range slider
+        # topic_range = input.topic_range()
+        # df = data()
+        # return df[(df["topic"] >= topic_range[0]) & (df["topic"] <= topic_range[1])]
+        
+        # OR for multi-select
+        selected = input.selected_topics()
+        df = data()
+        return df[df["topic"].isin(selected)]
+
+    @reactive.Calc
+    def titles():
+        return load_titles()
+
+    @reactive.Calc
+    def topic_model():
+        return load_topic_model()
+
+    
+    @reactive.Calc
+    def fig_static_topic_map():
+        # Get absolute path to the image file
+        app_dir = os.path.dirname(os.path.dirname(__file__))
+        image_path = os.path.join(app_dir, "www", "static", "img", "doc_map.png")
+        
+        # Use the refactored function from topic_utils.py
+        return create_static_topic_map(image_path)
+    
+
+    @reactive.Calc
+    def fig_topic_kwords():
+        # title_data = titles()
+        model_data = topic_model()
+        # reduced_embeddings_data = embeddings_2comp()
+        return create_topic_kwords(
+            model=model_data,
+            # text=title_data,
+            # reduced_embeddings=reduced_embeddings_data
+        )
+        
     @reactive.Calc
     def fig_one():
-        filtered_data = data()
-        # Filter for HLY at the figure level instead
-        hly_data_subset = filtered_data[filtered_data["HealthyLifeYears"].notna()]
+        topic_trend_data = filtered_data()
 
-        return create_figure(
-            data=hly_data_subset,
-            year_range=input.years_value(),
-            country=input.country_select(),
-            y_from="HealthyLifeYears",
-            title="Healthy Life Years",
-            labels={"Year": "Year", "HealthyLifeYears": "Healthy Life Years"},
+        return create_topic_trend(
+            data=topic_trend_data,
+            title="",
+            labels={"time_period": "Year", "count": "Project Count"},
+        )
+    
+    @reactive.Calc
+    def fig_two():
+        topic_funding_data = data()
+
+        return create_topic_total_funding(
+            data=topic_funding_data,
+            title="",
+            labels={"ecMaxContribution": "Total EC Contribution", "topic": "Topic"}
         )
 
     @reactive.Calc
-    def fig_two():
-        return create_figure(
-            data=data(),
-            year_range=input.years_value(),
-            country=input.country_select(),
-            y_from="GDP",
-            title="Gross Domestic Product",
-            labels={
-                "Year": "Year",
-                "GDP": "GDP",
-            },
+    def fig_three():
+        topic_funding_data = data()
+
+        return create_topic_avg_funding(
+            data=topic_funding_data,
+            title="",
+            labels={"ecMaxContribution": "Total EC Contribution", "topic": "Topic"}
         )
 
-    # @output(suspend_when_hidden=False)
+    @reactive.Calc
+    def fig_four():
+        topic_funding_data = data()
+
+        return create_topic_total_publication(
+            data=topic_funding_data,
+            title="",
+            labels={"publication_count": "Total Publications", "topic": "Topic",}
+        )
+    
+    @reactive.Calc
+    def fig_five():
+        topic_funding_data = data()
+
+        return create_topic_avg_publication(
+            data=topic_funding_data,
+            title="",
+            labels={"publication_count": "Total Publications", "topic": "Topic",}
+        )
+
     @render_widget
-    def hly_plot():
+    def topic_static_map():
+        return fig_static_topic_map()
+
+    @render_widget
+    def topic_kwords_plot():
+        return fig_topic_kwords()
+
+    @render_widget
+    def topic_trend_plot():
         return fig_one()
 
-    # @output(suspend_when_hidden=False)
     @render_widget
-    def gdp_plot():
+    def topic_total_funding_plot():
         return fig_two()
+
+    @render_widget
+    def topic_avg_funding_plot():
+        return fig_three()
+
+
+    @render_widget
+    def topic_total_publication_plot():
+        return fig_four()
+    
+    @render_widget
+    def topic_avg_publication_plot():
+        return fig_five()
+    
+    

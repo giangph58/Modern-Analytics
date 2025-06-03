@@ -1,6 +1,8 @@
 import os
-
+from bertopic import BERTopic
 import pandas as pd
+from safetensors.numpy import load_file
+from sentence_transformers import SentenceTransformer
 
 
 def load_real_data():
@@ -119,3 +121,41 @@ def load_topic_data():
 
 
 topic_data = load_topic_data()
+
+
+def load_topic_model():
+    """Load the pre-trained BERTopic model"""
+    # Get absolute path to model directory
+    # embedding_model = SentenceTransformer("NovaSearch/stella_en_400M_v5", trust_remote_code=True)
+    model_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "data/processed/model_dir"
+    )
+    # Explicitly specify loading from local path
+    return BERTopic.load(model_path)
+
+
+def load_2comp_embeddings():
+    """Load the pre-trained BERTopic model"""
+    # Get absolute path to model directory
+    data_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "data/processed/2comp_embeddings.safetensors"
+    )
+    # Explicitly specify loading from local path
+    return load_file(data_path)["embeddings"]
+
+
+def load_5comp_embeddings():
+    """Load the pre-trained BERTopic model"""
+    # Get absolute path to model directory
+    data_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "data/processed/5comp_embeddings.safetensors"
+    )
+    # Explicitly specify loading from local path
+    return load_file(data_path)["embeddings"]
+
+
+def load_titles():
+    return topic_data["title"].to_numpy()
