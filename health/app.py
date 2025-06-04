@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from modules import map, plot, topic
+from modules import map, plot, graph, topic
 from shiny import App, Session, reactive, ui
 from utils.helper_text import info_modal
 
@@ -114,6 +114,12 @@ plot_ui = ui.tags.div(
     class_="page-main",
 )
 
+graph_ui = ui.tags.div(
+    graph.graph_ui("graph"),
+    id="graph-container",
+    class_="page-main",
+)
+
 topic_ui = ui.tags.div(
     topic.topic_ui("topic"),
     id="topic-container", 
@@ -121,7 +127,7 @@ topic_ui = ui.tags.div(
 )
 
 
-page_layout = ui.tags.div(page_header, map_ui, plot_ui, topic_ui, class_="page-layout")
+page_layout = ui.tags.div(page_header, map_ui, plot_ui, graph_ui, topic_ui, class_="page-layout")
 
 app_ui = ui.page_fluid(
     page_dependencies,
@@ -140,6 +146,7 @@ def server(input, output, session: Session):
 
     map.map_server("map")
     plot.plot_server("plot")
+    graph.graph_server("graph")
     topic.topic_server("topic")
 
     @reactive.Effect
@@ -151,6 +158,12 @@ def server(input, output, session: Session):
     @reactive.event(input.tab_funding)
     async def _():
         await session.send_custom_message("toggleActiveTab", {"activeTab": "plot"})
+
+    @reactive.Effect
+    @reactive.event(input.tab_topic)
+    async def _():
+        await session.send_custom_message("toggleActiveTab", {"activeTab": "graph"})
+
 
     @reactive.Effect
     @reactive.event(input.tab_topic)
