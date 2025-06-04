@@ -1,0 +1,38 @@
+[project]
+name = "modern-analytics"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "beautifulsoup4>=4.13.4",
+    "bertopic>=0.17.0",
+    "datamapplot>=0.5.1",
+    "datasets>=3.6.0",
+    "hdbscan>=0.8.40",
+    "huggingface-hub>=0.32.0",
+    "ipykernel>=6.29.5",
+    "ipyleaflet>=0.19.2",
+    "ipywidgets>=8.1.7",
+    "matplotlib>=3.10.3",
+    "nbformat>=5.10.4",
+    "nltk>=3.9.1",
+    "numpy==1.26.4",
+    "openpyxl>=3.1.5",
+    "pandas>=2.2.3",
+    "plotly>=6.1.1",
+    "pyqtree>=1.0.0",
+    "rsconnect-python>=1.26.0",
+    "safetensors>=0.5.3",
+    "scispacy>=0.5.5",
+    "seaborn>=0.13.2",
+    "sentence-transformers>=4.1.0",
+    "shiny>=1.4.0",
+    "shinywidgets>=0.6.2",
+    "spacy>=3.7.5",
+    "torch>=2.7.0",
+    "transformers>=4.52.3",
+    "umap>=0.1.1",
+    "umap-learn>=0.5.7",
+    "xformers>=0.0.30",
+]
