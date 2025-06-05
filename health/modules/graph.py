@@ -1,16 +1,17 @@
 from utils.helper_text import (
     about_text,
     dataset_information,
-    missing_note,
-    slider_text_plot,
+    missing_note
 )
 
 from shiny import ui, render, reactive, module
-from utils.graph_utils import build_country_network, create_network_plot
+from shinywidgets import (
+    output_widget,
+    render_widget,
+)
+from utils.graph_utils import build_country_network, create_network_plot, create_trendline_plot
 from data import orgs_data, orgs_pub_data
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 @module.ui
 def graph_ui():
@@ -18,9 +19,8 @@ def graph_ui():
         ui.tags.div(
             about_text,
             ui.tags.hr(),
-            slider_text_plot,
-            ui.tags.br(),
-            ui.tags.hr(),
+            # ui.tags.br(),
+            # ui.tags.hr(),
             dataset_information,
             ui.tags.hr(),
             missing_note,
@@ -31,9 +31,10 @@ def graph_ui():
             ui.output_plot("network_plot", height="1000px", width="100%"),
             ui.tags.hr(),
             ui.tags.div(
-                ui.tags.h4("Coordination vs Publications Analysis"),
-                ui.output_plot("trendline_plot", height="500px", width="100%"),
-                class_="plot-container"
+                ui.tags.h4("Top Country Collaborations"),
+                ui.input_numeric("top_country_n", "Number of top country pairs to display:", value=10, min=5, max=30),
+                ui.output_table("country_table"),
+                class_="table-container"
             ),
             ui.tags.hr(),
             ui.tags.div(
@@ -42,6 +43,9 @@ def graph_ui():
                 ui.output_table("coordinators_table"),
                 class_="table-container"
             ),
+            ui.tags.h4("Coordination vs Publications Analysis"),
+            output_widget("orgs_pub_plot"),
+            ui.tags.hr(),
             class_="main-main card-style",
         ),
         class_="main-layout",
@@ -74,6 +78,38 @@ def graph_server(input, output, session):
         return fig
     
     @reactive.Calc
+    def country_collaboration_data():
+        """Generate data for country collaboration table"""
+        from itertools import combinations
+        from collections import Counter
+        
+        health_orgs = data()
+        country_edges = []
+
+        for pid, group in health_orgs.groupby('projectID'):
+            countries = group['country_name'].dropna().unique()
+            if len(countries) >= 2:
+                for pair in combinations(sorted(countries), 2):
+                    country_edges.append(pair)
+
+        edge_counts = Counter(country_edges)
+
+        edge_df = pd.DataFrame(edge_counts.items(), columns=['Country Pair', 'Num Projects'])
+        edge_df = edge_df.sort_values(by='Num Projects', ascending=False)
+
+        edge_df[['Country A', 'Country B']] = pd.DataFrame(edge_df['Country Pair'].tolist(), index=edge_df.index)
+        edge_df.drop(columns='Country Pair', inplace=True)
+        
+        # Reorder columns: Country A, Country B, Number of Projects
+        edge_df = edge_df[['Country A', 'Country B', 'Num Projects']]
+        edge_df.columns = ['Country A', 'Country B', 'Number of Projects']  # Rename for consistency
+        
+        # Get top N country pairs
+        top_country_n = input.top_country_n()
+        return edge_df.head(top_country_n)
+        
+
+    @reactive.Calc
     def coordination_analysis_data():
         """Generate data for coordination vs publications analysis"""
         # Filter for coordinator records from publication data
@@ -92,27 +128,22 @@ def graph_server(input, output, session):
         
         return combined
     
-    @render.plot
+    @reactive.Calc
     def trendline_plot():
-        """Render the coordination vs publications trendline plot"""
+        """Render the coordination vs publications interactive trendline plot"""
         combined = coordination_analysis_data()
         
-        plt.figure(figsize=(10, 6))
-        sns.regplot(
+        return create_trendline_plot(
             data=combined,
-            x='Coordinated Projects',
-            y='Total Publications',
-            scatter=True,
-            color='red'
+            x_col='Coordinated Projects',
+            y_col='Total Publications',
+            text_col='Institution',
+            title="Do Coordinators with More Projects Publish More?",
+            labels={
+                'Coordinated Projects': 'Number of Coordinated Projects',
+                'Total Publications': 'Total Publications'
+            }
         )
-        
-        plt.title("Do Coordinators with More Projects Publish More?")
-        plt.xlabel("Number of Coordinated Projects")
-        plt.ylabel("Total Publications")
-        plt.grid(True)
-        plt.tight_layout()
-        
-        return plt.gcf()
         
     @reactive.Calc
     def top_coordinators_data():
@@ -136,6 +167,16 @@ def graph_server(input, output, session):
         return coordinator_counts.head(top_n)
     
     @render.table
+    def country_table():
+        """Render the top country collaborations table"""
+        return country_collaboration_data()
+
+
+    @render.table
     def coordinators_table():
         """Render the top coordinators table"""
         return top_coordinators_data()
+    
+    @render_widget
+    def orgs_pub_plot():
+        return trendline_plot()

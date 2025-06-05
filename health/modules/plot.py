@@ -64,15 +64,16 @@ def plot_server(input, output, session):
         return create_funds_bar_chart(
             data=data(),
             country=input.country_select(),
-            y_from="TotalFunds",
+            y_from="TotalFundsPerCountry",
             title="",
-            labels={"TotalFunds": "Total Funds (€)"},
+            labels={"TotalFundsPerCountry": "Total Funds (€)"},
         )
 
     @reactive.Calc
     def funding_vs_gdp_plot():
         return create_scatter_plot(
             data=data(),
+            country=input.country_select(),
             x_col="TotalFundsPerCountry",
             y_col="GDPM2124",
             text_col="country_name",
@@ -88,6 +89,7 @@ def plot_server(input, output, session):
     def funding_vs_hly_plot():
         return create_scatter_plot(
             data=data(),
+            country=input.country_select(),
             x_col="TotalFundsPerCountry",
             y_col="HLYM2122",
             text_col="country_name",
@@ -139,11 +141,4 @@ def plot_server(input, output, session):
     @render_widget
     def funds_hly_plot():
         return funding_vs_hly_plot()
-    
-    # @render_widget
-    # def hly_plot():
-    #     return fig_two()
 
-    # @render_widget
-    # def gdp_plot():
-    #     return fig_three()

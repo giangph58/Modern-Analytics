@@ -15,7 +15,7 @@ def create_funds_bar_chart(
     labels: dict,
 ) -> go.FigureWidget:
     plot_data = data[data["country_name"].isin(country)]
-    plot_data["TotalFunds"] = plot_data["TotalFundsPerCountry"]
+    # plot_data["TotalFunds"] = plot_data["TotalFundsPerCountry"]
 
     fig = px.bar(
         data_frame=plot_data,
@@ -30,26 +30,49 @@ def create_funds_bar_chart(
     fig.update_traces(
         hovertemplate=f"<b>%{{y}}</b><br>{labels.get(y_from, y_from)}: %{{x:,.0f}}<extra></extra>"
     )
+    
+    # Font configs
+    xaxis_font_size = 16
+    yaxis_font_size = 16
+    axis_title_size = 18
+    title_font_size = 24
+    
     fig.update_layout(
         showlegend=False,
         plot_bgcolor="white",
         height=800,
         width=1200,
         hovermode="y unified",
-        xaxis={"title_text": labels.get(y_from, y_from)},
-        yaxis={
-            "categoryorder": "total ascending",
-            "title": None
-        },
+        title=dict(
+            text=title,
+            x=0.5,
+            xanchor="center",
+            font=dict(size=title_font_size)
+        ),
+        xaxis=dict(
+            title_text=labels.get(y_from, y_from),
+            title_font=dict(size=axis_title_size),
+            tickfont=dict(size=xaxis_font_size),
+            showgrid=True,
+            gridcolor="#d2d2d2",
+            gridwidth=0.5
+        ),
+        yaxis=dict(
+            categoryorder="total ascending",
+            title=None,
+            tickfont=dict(size=yaxis_font_size),
+            showgrid=False
+        ),
     )
-    fig.update_xaxes(showline=False, gridcolor="#d2d2d2", gridwidth=0.5)
-    fig.update_yaxes(showline=False, gridcolor="#d2d2d2", gridwidth=0.5)
+    fig.update_xaxes(showline=False)
+    fig.update_yaxes(showline=False)
 
     return go.FigureWidget(fig)
 
 
 def create_scatter_plot(
     data: DataFrame,
+    country: str,
     x_col: str,
     y_col: str,
     text_col: str,
@@ -60,7 +83,8 @@ def create_scatter_plot(
     Create a scatter plot with regression lines and confidence intervals
     """
     # Remove rows with missing data
-    plot_data = data.dropna(subset=[x_col, y_col])
+    plot_data = data[data["country_name"].isin(country)]
+    plot_data = plot_data.dropna(subset=[x_col, y_col])
   
     if plot_data.empty:
         fig = go.Figure()
@@ -136,7 +160,7 @@ def create_scatter_plot(
     # Font configs
     xaxis_font_size = 16
     yaxis_font_size = 16
-    axis_title_size = 20
+    axis_title_size = 18
     title_font_size = 24
     
     # Update layout
