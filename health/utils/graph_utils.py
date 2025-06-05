@@ -1,11 +1,11 @@
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
-import numpy as np
-import matplotlib.cm as cm
 import matplotlib.colors as colors
 from itertools import combinations
 from collections import Counter
+from pandas import DataFrame
+
 
 # Geographic positions for European countries
 geo_pos = {
@@ -49,55 +49,15 @@ geo_pos = {
     'Iceland': (0, 9)
 }
 
-# Country code to name mapping
-country_names = {
-    'BE': 'Belgium', 'BG': 'Bulgaria', 'CZ': 'Czechia', 'DK': 'Denmark', 'DE': 'Germany',
-    'EE': 'Estonia', 'IE': 'Ireland', 'GR': 'Greece', 'ES': 'Spain', 'FR': 'France',
-    'HR': 'Croatia', 'IT': 'Italy', 'CY': 'Cyprus', 'LV': 'Latvia', 'LT': 'Lithuania',
-    'LU': 'Luxembourg', 'HU': 'Hungary', 'MT': 'Malta', 'NL': 'Netherlands', 'AT': 'Austria',
-    'PL': 'Poland', 'PT': 'Portugal', 'RO': 'Romania', 'SI': 'Slovenia', 'SK': 'Slovakia',
-    'FI': 'Finland', 'SE': 'Sweden', 'IS': 'Iceland', 'LI': 'Liechtenstein', 'NO': 'Norway',
-    'CH': 'Switzerland', 'GB': 'United Kingdom', 'BA': 'Bosnia and Herzegovina',
-    'ME': 'Montenegro', 'MK': 'North Macedonia', 'AL': 'Albania', 'RS': 'Serbia',
-    'TR': 'Türkiye', 'UA': 'Ukraine', 'NULL': 'Kosovo'
-}
 
-def load_health_data():
-    """
-    Load and prepare health project organization data
-    """
-    # Load datasets
-    health_df = pd.read_csv("data/interim/health.csv")
-    orgs = pd.read_excel("data/raw/organization.xlsx")
-    
-    # Define European countries
-    european_countries = [
-        'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR',
-        'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK',
-        'SI', 'ES', 'SE', 'NO', 'IS', 'LI', 'CH', 'GB', 'BA', 'ME', 'MK', 'AL',
-        'RS', 'TR', 'UA', 'NULL'  # 'NULL' for Kosovo
-    ]
-    
-    # Get list of health-related project IDs
-    health_ids = health_df['projectID'].unique()
-    
-    # Select only participants in health projects
-    health_orgs = orgs[orgs['projectID'].isin(health_ids)]
-    
-    # Filter for European countries and add country names
-    health_orgs = health_orgs[health_orgs['country'].isin(european_countries)]
-    health_orgs['country_name'] = health_orgs['country'].map(country_names)
-    
-    return health_orgs
-
-def build_country_network(health_orgs, min_weight=5):
+def build_country_network(data: DataFrame, min_weight=5):
     """
     Build a network graph of country collaborations based on project data
     """
     country_edges = []
 
     # Create edges between countries collaborating on the same project
-    for pid, group in health_orgs.groupby('projectID'):
+    for pid, group in data.groupby('projectID'):
         countries = group['country_name'].dropna().unique()
         if len(countries) >= 2:
             for pair in combinations(sorted(countries), 2):

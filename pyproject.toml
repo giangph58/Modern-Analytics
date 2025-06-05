@@ -31,6 +31,7 @@ dependencies = [
     "shiny>=1.4.0",
     "shinywidgets>=0.6.2",
     "spacy>=3.7.5",
+    "statsmodels>=0.14.4",
     "torch>=2.7.0",
     "transformers>=4.52.3",
     "umap>=0.1.1",

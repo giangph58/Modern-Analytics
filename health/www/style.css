@@ -135,3 +135,32 @@ input#dataset:before {
     bottom: 0;
     margin: auto;
   }
+
+
+/* Add this to your existing CSS */
+
+.table-container {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.shiny-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.shiny-table th {
+  background-color: #f2f2f2;
+  padding: 8px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+.shiny-table td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.shiny-table tr:hover {
+  background-color: #f5f5f5;
+}

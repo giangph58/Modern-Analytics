@@ -28,3 +28,4 @@ ipyleaflet
 shinywidgets
 rsconnect-python
 networkx
+statsmodels

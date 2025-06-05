@@ -31,9 +31,7 @@ slider_text_map = tags.p(
 
 slider_text_plot = tags.p(
     """
-    Please use the slider below to change the years as well as the
-    dropdown to select the countries to compare. By default, the
-    data for Germany is plotted.
+    Please use the dropdown to select the countries to compare. By default, the data for all countries are plotted.
     """,
     style="""
     text-align: justify;

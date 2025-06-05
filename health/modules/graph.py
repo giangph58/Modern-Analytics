@@ -1,63 +1,141 @@
-from shiny import ui, render, reactive
-from utils.graph_utils import load_health_data, build_country_network, create_network_plot
+from utils.helper_text import (
+    about_text,
+    dataset_information,
+    missing_note,
+    slider_text_plot,
+)
 
-def graph_ui(id):
-    """UI for the network graph visualization module"""
-    return ui.page_fluid(
-        ui.div(
-            ui.h2("EU Health Research Collaboration Network"),
-            ui.p(
-                """This network visualization shows collaborative relationships between European countries 
-                in health research projects funded by Horizon Europe. The geographical layout allows you to 
-                see regional patterns in research collaborations.""",
-                class_="module-description"
+from shiny import ui, render, reactive, module
+from utils.graph_utils import build_country_network, create_network_plot
+from data import orgs_data, orgs_pub_data
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+@module.ui
+def graph_ui():
+    return ui.tags.div(
+        ui.tags.div(
+            about_text,
+            ui.tags.hr(),
+            slider_text_plot,
+            ui.tags.br(),
+            ui.tags.hr(),
+            dataset_information,
+            ui.tags.hr(),
+            missing_note,
+            class_="main-sidebar card-style",
+        ),
+        ui.tags.div(
+            ui.tags.h4("EU Health Research Collaboration Network"),
+            ui.output_plot("network_plot", height="1000px", width="100%"),
+            ui.tags.hr(),
+            ui.tags.div(
+                ui.tags.h4("Coordination vs Publications Analysis"),
+                ui.output_plot("trendline_plot", height="500px", width="100%"),
+                class_="plot-container"
             ),
-            ui.div(
-                ui.input_slider(
-                    id="min_collaborations",
-                    label="Minimum collaborations threshold:",
-                    min=1,
-                    max=20,
-                    value=5,
-                    step=1
-                ),
-                ui.input_checkbox(
-                    id="show_labels",
-                    label="Show country labels",
-                    value=True
-                ),
-                class_="controls-row"
+            ui.tags.hr(),
+            ui.tags.div(
+                ui.tags.h4("Top Project Coordinators"),
+                ui.input_numeric("top_n", "Number of top coordinators to display:", value=10, min=5, max=50),
+                ui.output_table("coordinators_table"),
+                class_="table-container"
             ),
-            ui.output_plot("network_plot", height="800px", width="100%"),
-            ui.div(
-                ui.p(
-                    """Larger nodes represent countries with more collaborative connections. 
-                    Node color indicates the degree centrality (number of partner countries), 
-                    and edge width corresponds to the number of joint projects between countries."""
-                ),
-                class_="plot-explanation"
-            ),
-            class_="network-container card-style"
-        )
+            class_="main-main card-style",
+        ),
+        class_="main-layout",
     )
 
-def graph_server(id):
+@module.server
+def graph_server(input, output, session):
     """Server function for network graph visualization"""
     
-    # Load data once when the module initializes
-    health_orgs = load_health_data()
+    @reactive.Calc
+    def data():
+        return orgs_data
+    
+    @reactive.Calc
+    def pub_data():
+        return orgs_pub_data
     
     @reactive.Calc
     def generate_network():
         """Build the network based on current settings"""
-        min_weight = input.min_collaborations()
-        G, _ = build_country_network(health_orgs, min_weight=min_weight)
+        min_weight = 5
+        G, _ = build_country_network(data(), min_weight=min_weight)
         return G
     
     @render.plot
     def network_plot():
         """Render the network visualization"""
         G = generate_network()
-        show_labels = input.show_labels()
-        fig = create_network_plot(G, show_labels=show_labels)
+        fig = create_network_plot(G)
         return fig
+    
+    @reactive.Calc
+    def coordination_analysis_data():
+        """Generate data for coordination vs publications analysis"""
+        # Filter for coordinator records from publication data
+        health_coordinators = pub_data()[pub_data()['role'].str.lower() == 'coordinator']
+        
+        # Frequency of coordination
+        coord_freq = health_coordinators['name'].value_counts().reset_index()
+        coord_freq.columns = ['name', 'coord_count']
+        
+        # Publication counts merged
+        pubs_per_org = health_coordinators.groupby('name')['publicationCount'].sum().reset_index()
+        
+        # Merge both
+        combined = pd.merge(coord_freq, pubs_per_org, on='name')
+        combined.columns = ['Institution', 'Coordinated Projects', 'Total Publications']
+        
+        return combined
+    
+    @render.plot
+    def trendline_plot():
+        """Render the coordination vs publications trendline plot"""
+        combined = coordination_analysis_data()
+        
+        plt.figure(figsize=(10, 6))
+        sns.regplot(
+            data=combined,
+            x='Coordinated Projects',
+            y='Total Publications',
+            scatter=True,
+            color='red'
+        )
+        
+        plt.title("Do Coordinators with More Projects Publish More?")
+        plt.xlabel("Number of Coordinated Projects")
+        plt.ylabel("Total Publications")
+        plt.grid(True)
+        plt.tight_layout()
+        
+        return plt.gcf()
+        
+    @reactive.Calc
+    def top_coordinators_data():
+        """Generate data for top coordinators table"""
+        # Filter for coordinator records
+        health_coordinators = data()[data()['role'].str.lower() == 'coordinator']
+        
+        # Count projects per coordinator and get top N
+        top_n = input.top_n()
+        coordinator_counts = (
+            health_coordinators
+                .groupby(['name', 'country_name'])
+                .size()
+                .reset_index(name='num_coordinated_projects')
+                .sort_values(by='num_coordinated_projects', ascending=False)
+        )
+                                                 
+        coordinator_counts.columns = ['Organization', "Country", "Number of Coordinated Projects"]
+        
+        # Get top N coordinators
+        return coordinator_counts.head(top_n)
+    
+    @render.table
+    def coordinators_table():
+        """Render the top coordinators table"""
+        return top_coordinators_data()

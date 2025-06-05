@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from modules import map, plot, graph, topic
+from modules import plot, graph, topic
 from shiny import App, Session, reactive, ui
 from utils.helper_text import info_modal
 
@@ -54,14 +54,14 @@ page_header = ui.tags.div(
         class_="navigation-logo",
     ),
     ui.tags.div(
-        ui.tags.div(
-            ui.input_action_button(
-                id="tab_map",
-                label="Map",
-                class_="navbar-button",
-            ),
-            id="div-navbar-map",
-        ),
+        # ui.tags.div(
+        #     ui.input_action_button(
+        #         id="tab_map",
+        #         label="Map",
+        #         class_="navbar-button",
+        #     ),
+        #     id="div-navbar-map",
+        # ),
         ui.tags.div(
             ui.input_action_button(
                 id="tab_funding",
@@ -72,11 +72,11 @@ page_header = ui.tags.div(
         ),
         ui.tags.div(
             ui.input_action_button(
-                id="tab_collab",
+                id="tab_graph",
                 label="Collaborations",
                 class_="navbar-button",
             ),
-            id="div-navbar-collab",
+            id="div-navbar-graph",
         ),
         ui.tags.div(
             ui.input_action_button(
@@ -102,11 +102,11 @@ page_header = ui.tags.div(
     class_="navbar-top page-header card-style",
 )
 
-map_ui = ui.tags.div(
-    map.map_ui("map"),
-    id="map-container",
-    class_="page-main main-visible",
-)
+# map_ui = ui.tags.div(
+#     map.map_ui("map"),
+#     id="map-container",
+#     class_="page-main main-visible",
+# )
 
 plot_ui = ui.tags.div(
     plot.plot_ui("plot"),
@@ -127,7 +127,9 @@ topic_ui = ui.tags.div(
 )
 
 
-page_layout = ui.tags.div(page_header, map_ui, plot_ui, graph_ui, topic_ui, class_="page-layout")
+page_layout = ui.tags.div(page_header, 
+                          # map_ui, 
+                          plot_ui, graph_ui, topic_ui, class_="page-layout")
 
 app_ui = ui.page_fluid(
     page_dependencies,
@@ -144,15 +146,15 @@ def server(input, output, session: Session):
     def _():
         info_modal()
 
-    map.map_server("map")
+    # map.map_server("map")
     plot.plot_server("plot")
     graph.graph_server("graph")
     topic.topic_server("topic")
 
-    @reactive.Effect
-    @reactive.event(input.tab_map)
-    async def _():
-        await session.send_custom_message("toggleActiveTab", {"activeTab": "map"})
+    # @reactive.Effect
+    # @reactive.event(input.tab_map)
+    # async def _():
+    #     await session.send_custom_message("toggleActiveTab", {"activeTab": "map"})
 
     @reactive.Effect
     @reactive.event(input.tab_funding)
@@ -160,7 +162,7 @@ def server(input, output, session: Session):
         await session.send_custom_message("toggleActiveTab", {"activeTab": "plot"})
 
     @reactive.Effect
-    @reactive.event(input.tab_topic)
+    @reactive.event(input.tab_graph)
     async def _():
         await session.send_custom_message("toggleActiveTab", {"activeTab": "graph"})
 
@@ -170,10 +172,6 @@ def server(input, output, session: Session):
     async def _():
         await session.send_custom_message("toggleActiveTab", {"activeTab": "topic"})
 
-    # @reactive.Effect
-    # @reactive.event(input.tab_collab)
-    # async def _():
-    #     await session.send_custom_message("toggleActiveTab", {"activeTab": "collab"})
 
 www_dir = Path(__file__).parent / "www"
 app = App(app_ui, server, static_assets=www_dir)
