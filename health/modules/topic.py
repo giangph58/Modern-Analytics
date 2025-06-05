@@ -4,7 +4,7 @@ from shinywidgets import (
     render_widget,
 )
 from utils.helper_text import (
-    about_text,
+    about_topic,
     dataset_information,
     missing_note
 )
@@ -20,7 +20,7 @@ topic_choices = topic_data["topic_label"].unique().tolist()
 def topic_ui():
     return ui.tags.div(
         ui.tags.div(
-            about_text,
+            about_topic,
             ui.tags.hr(),
             ui.h4("Topic Filter"),
             ui.input_selectize(
@@ -123,10 +123,6 @@ def topic_server(input, output, session):
     @render_widget
     def topic_static_map():
         return fig_static_topic_map()
-
-    # @render_widget
-    # def topic_kwords_plot():
-    #     return fig_topic_kwords()
 
     @render_widget
     def topic_trend_plot():

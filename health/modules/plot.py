@@ -4,7 +4,7 @@ from shinywidgets import (
     render_widget,
 )
 from utils.helper_text import (
-    about_text,
+    about_funds,
     dataset_information,
     missing_note,
     slider_text_plot,
@@ -20,7 +20,7 @@ country_choices = plot_data["country_name"].unique().tolist()
 def plot_ui():
     return ui.tags.div(
         ui.tags.div(
-            about_text,
+            about_funds,
             ui.tags.hr(),
             slider_text_plot,
             ui.tags.br(),
@@ -101,35 +101,6 @@ def plot_server(input, output, session):
             }
         )
     
-    # @reactive.Calc
-    # def fig_two():
-    #     filtered_data = data()
-    #     # Filter for HLY at the figure level instead
-    #     hly_data_subset = filtered_data[filtered_data["HealthyLifeYears"].notna()]
-
-    #     return create_figure(
-    #         data=hly_data_subset,
-    #         year_range=input.years_value(),
-    #         country=input.country_select(),
-    #         y_from="HealthyLifeYears",
-    #         title="",
-    #         labels={"Year": "Year", "HealthyLifeYears": "Healthy Life Years (years)"},
-    #     )
-
-    # @reactive.Calc
-    # def fig_three():
-    #     return create_figure(
-    #         data=data(),
-    #         year_range=input.years_value(),
-    #         country=input.country_select(),
-    #         y_from="GDP",
-    #         title="",
-    #         labels={
-    #             "Year": "Year",
-    #             "GDP": "GDP per capita (€)",
-    #         },
-    #     )
-
     @render_widget
     def funds_plot():
         return fig_one()

@@ -1,13 +1,12 @@
 from htmltools import TagList, tags
 from shiny.ui import modal, modal_button, modal_show
 
-about_text = TagList(
-    tags.h3("About"),
+about_funds = TagList(
+    tags.h3("Funding and Impact Analysis"),
     tags.br(),
     tags.p(
         """
-        The app presents a visual summary of insights from an analysis of the dynamics of Horizon Europe research investment and its contributions to Health.
-        
+        We highlight insights from an analysis of the dynamics of Horizon Europe research investment and its contributions to Health.
         """,
         style="""
         text-align: justify;
@@ -16,6 +15,40 @@ about_text = TagList(
         """,
     ),
 )
+
+
+about_graph = TagList(
+    tags.h3("Network Analysis"),
+    tags.br(),
+    tags.p(
+        """
+        Using NetworkX, we identify collaboration patterns at country- and organization-level and relate its to publication outputs.        
+        """,
+        style="""
+        text-align: justify;
+        word-break:break-word;
+        hyphens: auto;
+        """,
+    ),
+)
+
+
+about_topic = TagList(
+    tags.h3("Thematic Analysis"),
+    tags.br(),
+    tags.p(
+        """
+        Using the BERTopic framework, we delve into health projects' description to identify emerging topics, trends, funding, and publication patterns.        
+        """,
+        style="""
+        text-align: justify;
+        word-break:break-word;
+        hyphens: auto;
+        """,
+    ),
+)
+
+
 
 slider_text_map = tags.p(
     """

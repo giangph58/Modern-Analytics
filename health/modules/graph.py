@@ -1,5 +1,5 @@
 from utils.helper_text import (
-    about_text,
+    about_graph,
     dataset_information,
     missing_note
 )
@@ -17,10 +17,8 @@ import pandas as pd
 def graph_ui():
     return ui.tags.div(
         ui.tags.div(
-            about_text,
+            about_graph,
             ui.tags.hr(),
-            # ui.tags.br(),
-            # ui.tags.hr(),
             dataset_information,
             ui.tags.hr(),
             missing_note,

@@ -1,8 +1,5 @@
 import os
-# from bertopic import BERTopic
 import pandas as pd
-# from safetensors.numpy import load_file
-# from sentence_transformers import SentenceTransformer
 
 
 def get_data_dir():
